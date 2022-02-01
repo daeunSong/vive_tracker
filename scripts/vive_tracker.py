@@ -83,21 +83,9 @@ def vive_tracker():
                             publish_name_str,
                             "vive_world")
 
-            # Publish a topic as euler angles
-            [x,y,z,roll,pitch,yaw] = v.devices[deviceName].get_pose_euler()
-            y_rot = math.radians(pitch)
-
-            if deviceName not in publisher:
-                publisher[deviceName] = rospy.Publisher(publish_name_str, String, queue_size=10)
-
-
-            publisher[deviceName].publish('  X: ' + str(x) + '  Y: ' + str(y) + '  Z: ' + str(z) + '  Pitch: ' + str(pitch) + '  Roll: ' + str(roll) + '  Yaw: ' + str(yaw))
-
             if "reference" not in deviceName:
                 if deviceName + "_odom" not in publisher:
-                    publisher["ring_odom"] = rospy.Publisher("ring_odom", Odometry, queue_size=50)
                     publisher[deviceName + "_odom"] = rospy.Publisher(publish_name_str + "_odom", Odometry, queue_size=50)
-                    publisher[deviceName + "_inverted_odom"] = rospy.Publisher(publish_name_str + "_inverted_odom", Odometry, queue_size=50)
                     publisher[deviceName + "_pose"] = rospy.Publisher(publish_name_str + "_pose",PoseWithCovarianceStamped,queue_size=10)
                 # next, we'll publish the odometry message over ROS
                 odom = Odometry()
@@ -106,18 +94,8 @@ def vive_tracker():
                 # set the position
                 odom.pose.pose = Pose(Point(x, y, z), Quaternion(qx,qy,qz,qw))
 
-                inv_odom = Odometry()
-                inv_odom.header.stamp = time
-                inv_odom.header.frame_id = "vive_world"
-                # set the position
-                [inv_qx, inv_qy, inv_qz, inv_qw] = tf.transformations.quaternion_multiply([qx, qy, qz, qw], [-0.707, 0.707, 0, 0])
-                q = Quaternion(inv_qx,inv_qy,inv_qz,inv_qw)
-                # pdb.set_trace()
-                # q_new = q * q_inv
-                inv_odom.pose.pose = Pose(Point(x, y+0.05, z), q)
-
                 # set the velocity
-                odom.child_frame_id = "ak1_base_link"
+                odom.child_frame_id = "base_link"
                 [vx, vy, vz, v_roll, v_pitch, v_yaw] = v.devices[deviceName].get_velocities()
                 odom.twist.twist = Twist(Vector3(vx, vy, vz), Vector3(v_roll, v_pitch, v_yaw))
                 # This is all wrong but close enough for now
@@ -133,15 +111,7 @@ def vive_tracker():
                 if not (x == 0.0 and y == 0.0 and z == 0.0 and vx == 0.0 and vy == 0.0 and vz == 0.0 and v_roll == 0.0 and v_pitch == 0.0 and v_yaw == 0.0):
                     # publish the message
                     publisher[deviceName + "_odom"].publish(odom)
-                    publisher[deviceName + "_inverted_odom"].publish(inv_odom)
                     publisher[deviceName + "_pose"].publish(pose)
-                    # Publish the ring position
-                    try:
-                        (ring_trans,ring_rot) = listener.lookupTransform("vive_world", "ring" , time)
-                        odom.pose.pose = Pose(Point(ring_trans[0],ring_trans[1],ring_trans[2]), Quaternion(qx, qy, qz, qw))
-                        publisher["ring_odom"].publish(odom)
-                    except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                        continue
 
         rate.sleep()
 

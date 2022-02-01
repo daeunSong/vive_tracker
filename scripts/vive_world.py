@@ -12,7 +12,8 @@ def vive_world():
     listener = tf.TransformListener()
     rate = rospy.Rate(100) # 10hz
     translation = [0,0,0]
-    rotation = [0.707,0.0,0.0,0.707]
+    rotation = [0.0,0.0,0.0,1.0]
+    # rotation = [0.707,0.0,0.0,0.707]
     broadcaster = tf.TransformBroadcaster()
     broadcaster.sendTransform(translation,
                     rotation,

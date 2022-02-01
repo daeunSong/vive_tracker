@@ -73,9 +73,12 @@ def vive_tracker():
             if deviceName not in broadcaster:
                 broadcaster[deviceName] = tf.TransformBroadcaster()
 
-            # Rotate Vive Trackers 180, so Z+ comes out of the top of the Tracker
+            # rotate the device position frames
+            [x,y,z] = [x,-z,y]
+            # Rotate and flip vive trackers
             if "LHR" in v.devices[deviceName].get_serial():
-                [qx, qy, qz, qw] = tf.transformations.quaternion_multiply([qx, qy, qz, qw], tf.transformations.quaternion_from_euler(math.pi, 0.0, -math.pi/2.0))
+                [qx, qy, qz, qw] = tf.transformations.quaternion_multiply([0, 0, -0.7071068, 0.7071068],tf.transformations.quaternion_multiply([-0.7071068, 0, 0, 0.7071068],[qx, qy, qz, qw]))
+                qw = - qw
 
             broadcaster[deviceName].sendTransform((x,y,z),
                             (qx,qy,qz,qw),

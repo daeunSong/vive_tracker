@@ -2,23 +2,16 @@
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3, PoseWithCovarianceStamped
 import rospy
-from std_msgs.msg import String
 import triad_openvr
-import time
-import sys
 import tf
-from tf.transformations import quaternion_from_euler
-from tf.transformations import quaternion_multiply
 import numpy as np
-import math
-import pdb
 
 def vive_tracker():
     rospy.init_node('vive_tracker_frame')
     broadcaster = { }
     publisher = { }
     listener = tf.TransformListener()
-    rate = rospy.Rate(30) # 10hz]
+    rate = rospy.Rate(50)
     deviceCount = 0
 
     try:

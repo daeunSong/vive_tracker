@@ -10,7 +10,7 @@ import tf
 def vive_world():
     rospy.init_node('vive_tracker_frame')
     listener = tf.TransformListener()
-    rate = rospy.Rate(100) # 10hz
+    rate = rospy.Rate(50) # 10hz
     translation = [0,0,0]
     rotation = [0.0,0.0,0.0,1.0]
     # rotation = [0.707,0.0,0.0,0.707]
